@@ -990,6 +990,116 @@ function initNav(){
   document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
 }
 
+/* ── SEED — dados históricos da planilha ── */
+const SEED_DATA = {
+  jan: {
+    gastos: [
+      {categoria:'Alimentação',semana:1,valor:22,desc:'Semana 1'},{categoria:'Alimentação',semana:2,valor:22,desc:'Semana 2'},{categoria:'Alimentação',semana:3,valor:22,desc:'Semana 3'},{categoria:'Alimentação',semana:4,valor:14,desc:'Semana 4'},
+      {categoria:'Transporte',semana:1,valor:8,desc:'Semana 1'},{categoria:'Transporte',semana:2,valor:8,desc:'Semana 2'},{categoria:'Transporte',semana:3,valor:8,desc:'Semana 3'},{categoria:'Transporte',semana:4,valor:6,desc:'Semana 4'},
+      {categoria:'Lazer',semana:1,valor:59,desc:'Semana 1'},
+      {categoria:'Saúde',semana:1,valor:90,desc:'Semana 1'},
+      {categoria:'Outros',semana:1,valor:10,desc:'Semana 1'},{categoria:'Outros',semana:2,valor:7,desc:'Semana 2'},{categoria:'Outros',semana:3,valor:7,desc:'Semana 3'},{categoria:'Outros',semana:4,valor:7,desc:'Semana 4'},
+    ],
+    receitas: [{desc:'Salário Janeiro',valor:1060,semana:2}],
+    rendimentos: []
+  },
+  fev: {
+    gastos: [
+      {categoria:'Alimentação',semana:1,valor:22,desc:'Semana 1'},{categoria:'Alimentação',semana:2,valor:22,desc:'Semana 2'},{categoria:'Alimentação',semana:3,valor:22,desc:'Semana 3'},{categoria:'Alimentação',semana:4,valor:14,desc:'Semana 4'},
+      {categoria:'Transporte',semana:1,valor:8,desc:'Semana 1'},{categoria:'Transporte',semana:2,valor:8,desc:'Semana 2'},{categoria:'Transporte',semana:3,valor:8,desc:'Semana 3'},{categoria:'Transporte',semana:4,valor:6,desc:'Semana 4'},
+      {categoria:'Lazer',semana:1,valor:59,desc:'Semana 1'},
+      {categoria:'Saúde',semana:1,valor:90,desc:'Semana 1'},
+      {categoria:'Outros',semana:1,valor:10,desc:'Semana 1'},{categoria:'Outros',semana:2,valor:7,desc:'Semana 2'},{categoria:'Outros',semana:3,valor:7,desc:'Semana 3'},{categoria:'Outros',semana:4,valor:7,desc:'Semana 4'},
+    ],
+    receitas: [{desc:'Salário Fevereiro',valor:1060,semana:1}],
+    rendimentos: []
+  },
+  mar: {
+    gastos: [
+      {categoria:'Alimentação',semana:1,valor:22,desc:'Semana 1'},{categoria:'Alimentação',semana:2,valor:22,desc:'Semana 2'},{categoria:'Alimentação',semana:3,valor:22,desc:'Semana 3'},{categoria:'Alimentação',semana:4,valor:14,desc:'Semana 4'},
+      {categoria:'Transporte',semana:1,valor:8,desc:'Semana 1'},{categoria:'Transporte',semana:2,valor:8,desc:'Semana 2'},{categoria:'Transporte',semana:3,valor:8,desc:'Semana 3'},{categoria:'Transporte',semana:4,valor:6,desc:'Semana 4'},
+      {categoria:'Lazer',semana:1,valor:59,desc:'Semana 1'},
+      {categoria:'Saúde',semana:1,valor:90,desc:'Semana 1'},
+      {categoria:'Outros',semana:1,valor:10,desc:'Semana 1'},{categoria:'Outros',semana:2,valor:7,desc:'Semana 2'},{categoria:'Outros',semana:3,valor:7,desc:'Semana 3'},{categoria:'Outros',semana:4,valor:7,desc:'Semana 4'},
+    ],
+    receitas: [{desc:'Salário Março',valor:1060,semana:1}],
+    rendimentos: []
+  },
+  abr: {
+    gastos: [
+      {categoria:'Alimentação',semana:1,valor:22,desc:'Semana 1'},{categoria:'Alimentação',semana:2,valor:22,desc:'Semana 2'},{categoria:'Alimentação',semana:3,valor:22,desc:'Semana 3'},{categoria:'Alimentação',semana:4,valor:14,desc:'Semana 4'},
+      {categoria:'Transporte',semana:1,valor:8,desc:'Semana 1'},{categoria:'Transporte',semana:2,valor:8,desc:'Semana 2'},{categoria:'Transporte',semana:3,valor:8,desc:'Semana 3'},{categoria:'Transporte',semana:4,valor:6,desc:'Semana 4'},
+      {categoria:'Lazer',semana:1,valor:59,desc:'Semana 1'},
+      {categoria:'Saúde',semana:1,valor:90,desc:'Semana 1'},
+      {categoria:'Outros',semana:1,valor:10,desc:'Semana 1'},{categoria:'Outros',semana:2,valor:7,desc:'Semana 2'},{categoria:'Outros',semana:3,valor:7,desc:'Semana 3'},{categoria:'Outros',semana:4,valor:7,desc:'Semana 4'},
+    ],
+    receitas: [{desc:'Salário Abril',valor:1060,semana:2}],
+    rendimentos: []
+  },
+  mai: {
+    gastos: [
+      {categoria:'Alimentação',semana:2,valor:35,desc:'Semana 2'},{categoria:'Alimentação',semana:3,valor:158.60,desc:'Semana 3'},
+      {categoria:'Transporte',semana:3,valor:44.90,desc:'Semana 3'},
+      {categoria:'Lazer',semana:3,valor:12.90,desc:'Semana 3'},
+      {categoria:'Educação',semana:3,valor:61.69,desc:'Semana 3'},
+      {categoria:'Outros',semana:2,valor:3.47,desc:'Semana 2'},{categoria:'Outros',semana:3,valor:72.39,desc:'Semana 3'},{categoria:'Outros',semana:4,valor:42.74,desc:'Semana 4'},
+    ],
+    receitas: [
+      {desc:'Salário Maio',valor:1036,semana:2},
+      {desc:'Parte do aluguel',valor:70,semana:2},
+      {desc:'Troco de lanche ganho',valor:43.50,semana:2}
+    ],
+    rendimentos: [
+      {desc:'Juros da Caixa',valor:31.10},
+      {desc:'Rendimento',valor:7.82}
+    ]
+  },
+  jun: {
+    gastos: [
+      {categoria:'Alimentação',semana:1,valor:100,desc:'Semana 1'},{categoria:'Alimentação',semana:2,valor:139.90,desc:'Semana 2'},
+      {categoria:'Lazer',semana:2,valor:40.98,desc:'Semana 2'},
+      {categoria:'Outros',semana:1,valor:45,desc:'Semana 1'},{categoria:'Outros',semana:2,valor:59.98,desc:'Semana 2'},
+    ],
+    receitas: [{desc:'Salário Junho',valor:1038,semana:1}],
+    rendimentos: [{desc:'Juros da Caixa',valor:34.71}]
+  }
+};
+
+window.importarDadosHistoricos = async () => {
+  const btn = document.getElementById('btnSeed');
+  if(!uid){ showToast('Faça login primeiro.','error'); return; }
+  if(!confirm('Isso vai importar todos os dados de Jan–Jun 2026 para sua conta. Continuar?')) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Importando…';
+
+  let total = 0;
+  try {
+    for(const [mesId, dados] of Object.entries(SEED_DATA)){
+      const base = `users/${uid}/2026/${mesId}`;
+      for(const g of dados.gastos){
+        await addDoc(collection(db, base+'/gastos'), {...g, createdAt: serverTimestamp()});
+        total++;
+      }
+      for(const r of dados.receitas){
+        await addDoc(collection(db, base+'/receitas'), {...r, createdAt: serverTimestamp()});
+        total++;
+      }
+      for(const rd of dados.rendimentos){
+        await addDoc(collection(db, base+'/rendimentos'), {...rd, createdAt: serverTimestamp()});
+        total++;
+      }
+    }
+    showToast(`${total} lançamentos importados com sucesso! ✓`);
+    // remove o botão após importar — não faz sentido rodar duas vezes
+    btn.closest('.seed-bar')?.remove();
+  } catch(e){
+    showToast('Erro na importação: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Importar dados históricos';
+  }
+};
+
 /* ── AUTH STATE ── */
 onAuthStateChanged(auth, user => {
   if(user){
@@ -1002,6 +1112,28 @@ onAuthStateChanged(auth, user => {
     initNav();
     subscribeAll();
     renderAnual();
+
+    // mostra barra de seed se Firestore estiver vazio (checa jan)
+    const checkEmpty = onSnapshot(
+      query(collection(db,`users/${uid}/2026/jan/receitas`), orderBy('createdAt','asc')),
+      snap => {
+        checkEmpty(); // unsub imediatamente após primeira leitura
+        if(snap.empty){
+          const bar = document.createElement('div');
+          bar.className = 'seed-bar';
+          bar.style.cssText = 'grid-column:1/-1;background:#1a1425;border-bottom:1px solid #3b1f6e;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:#a78bfa';
+          bar.innerHTML = `
+            <span>📥 Nenhum dado encontrado. Quer importar os dados históricos de Jan–Jun da sua planilha?</span>
+            <button id="btnSeed" onclick="importarDadosHistoricos()" style="background:#7C3AED;border:none;color:#fff;padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
+              Importar dados históricos
+            </button>
+          `;
+          // insere após a topbar
+          const topbar = document.querySelector('.topbar');
+          topbar.insertAdjacentElement('afterend', bar);
+        }
+      }
+    );
   } else {
     uid = null;
     document.getElementById('authScreen').style.display = '';
