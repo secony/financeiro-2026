@@ -192,16 +192,62 @@ canvas{display:block}
 /* MOBILE */
 @media(max-width:720px){
   .shell{grid-template-columns:1fr}
-  .sidebar{display:none;position:fixed;top:60px;left:0;right:0;bottom:0;z-index:200;height:calc(100vh - 60px)}
-  .sidebar.open{display:flex}
+  .main{padding:16px 14px 100px;max-width:100%}
+
+  .topbar{padding:0 14px;height:52px}
+  .topbar-brand{font-size:14px;gap:7px}
+  .topbar-year{display:none}
+  .btn-logout{display:none}
   .hamburger{display:block}
-  .main{padding:20px 16px 80px}
-  .stat-grid{grid-template-columns:repeat(2,1fr)}
-  .page-header h1{font-size:20px}
-  .form-row{grid-template-columns:1fr}
-  .stat-value{font-size:18px}
-  .week-table th,.week-table td{padding:9px 10px;font-size:12px}
   .user-badge .email-text{display:none}
+
+  .sidebar{display:none;position:fixed;top:52px;left:0;right:0;bottom:0;z-index:200;height:calc(100vh - 52px)}
+  .sidebar.open{display:flex}
+
+  .page-header{margin-bottom:18px}
+  .page-header h1{font-size:19px;letter-spacing:-.3px}
+  .page-header p{font-size:12px}
+
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px}
+  .stat-card{padding:14px 14px}
+  .stat-label{font-size:10px}
+  .stat-value{font-size:17px;margin-top:1px}
+  .stat-sub{font-size:10px}
+  .stat-badge{font-size:10px;padding:2px 7px}
+
+  .week-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .week-scroll-hint{display:block;font-size:11px;color:var(--muted);margin-bottom:8px;margin-top:-4px}
+  .week-table{min-width:480px;font-size:12px}
+  .week-table th,.week-table td{padding:8px 10px}
+
+  .anual-table-wrap{display:none}
+
+  .cat-item{padding:12px 14px}
+  .cat-icon{width:26px;height:26px;font-size:12px}
+  .cat-name{font-size:13px}
+  .cat-amount{font-size:14px}
+  .cat-header{margin-bottom:8px}
+
+  .income-row{padding:10px 14px;font-size:13px}
+  .income-block-head{padding:11px 14px}
+
+  .btn-add-primary{width:100%;justify-content:center;padding:12px;font-size:14px}
+
+  .modal-overlay{align-items:flex-end;padding:0}
+  .modal{border-radius:20px 20px 0 0;padding:24px 20px 36px;max-width:100%;transform:translateY(100%)}
+  .modal-overlay.open .modal{transform:translateY(0)}
+  .modal h2{font-size:17px}
+  .modal p{font-size:12px;margin-bottom:16px}
+
+  .form-row{grid-template-columns:1fr}
+  .form-input,.form-select{font-size:16px}
+
+  .section-title{font-size:11px;margin-top:22px;margin-bottom:10px}
+  .chart-wrap{padding:16px 14px 8px}
+  .empty-state{padding:28px 20px}
+
+  .toast{bottom:16px;right:14px;left:14px;max-width:100%;text-align:center}
+  ::-webkit-scrollbar{display:none}
 }
 
 ::-webkit-scrollbar{width:6px;height:6px}
@@ -662,6 +708,13 @@ function renderMes(mesId){
     </tr>`;
   }).join('');
   rows += `<tr class="total-row"><td>TOTAL</td>${weekTotals.map(w=>`<td class="num-cell has-value">${w>0?fmtVal(w):'—'}</td>`).join('')}<td class="num-cell has-value">${fmtVal(totalGastos)}</td></tr>`;
+  const scrollHint = document.createElement('p');
+  scrollHint.className = 'week-scroll-hint';
+  scrollHint.textContent = '← deslize para ver todas as semanas';
+  scrollHint.style.cssText = 'display:none';
+  if(window.innerWidth<=720) scrollHint.style.display='block';
+  section.appendChild(scrollHint);
+
   wrap.innerHTML = `<table class="week-table"><thead><tr><th>Categoria</th><th>Semana 1</th><th>Semana 2</th><th>Semana 3</th><th>Semana 4</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table>`;
   section.appendChild(wrap);
 
@@ -817,6 +870,62 @@ function renderAnual(){
   tblWrap.innerHTML = `<table class="anual-table"><thead><tr><th>—</th>${mesesCols.map(m=>`<th>${m}</th>`).join('')}<th style="color:var(--accent)">TOTAL</th></tr></thead><tbody>${tableRows}</tbody></table>`;
   section.appendChild(tblWrap);
 
+  // MOBILE: resumo mensal em cards (visível só em mobile via CSS não, via JS detecta)
+  const secMobile = document.createElement('p');
+  secMobile.className = 'section-title';
+  secMobile.id = 'mobile-mes-title';
+  secMobile.textContent = 'Resumo por Mês';
+  secMobile.style.cssText = 'display:none';
+  section.appendChild(secMobile);
+
+  const mobileCards = document.createElement('div');
+  mobileCards.id = 'mobile-month-cards';
+  mobileCards.style.cssText = 'display:none;flex-direction:column;gap:10px';
+  MESES_IDS.forEach((id,i)=>{
+    const c = computedAll[i];
+    if(c.totalEntradas === 0 && c.totalGastos === 0) return;
+    const s = saldos[id];
+    const eco = c.totalEntradas > 0 ? Math.round(c.economiaReal/c.totalEntradas*100) : 0;
+    const card = document.createElement('div');
+    card.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px';
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-family:var(--font-head);font-size:15px;font-weight:700">${MESES_NOMES[i]}</span>
+        <span style="font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--accent)">${fmtVal(s)}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:var(--surface2);border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.7px;text-transform:uppercase;margin-bottom:4px">Entradas</div>
+          <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--green)">${fmtVal(c.totalEntradas)}</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.7px;text-transform:uppercase;margin-bottom:4px">Gastos</div>
+          <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--red)">${fmtVal(c.totalGastos)}</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:12px;color:var(--muted)">Economia</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:13px;font-weight:600;color:${c.economiaReal>=0?'var(--green)':'var(--red)'}">${fmtVal(c.economiaReal)}</span>
+          <span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:${eco>=40?'var(--green-dim)':'var(--red-dim)'};color:${eco>=40?'var(--green)':'var(--red)'}">${eco}%</span>
+        </div>
+      </div>
+    `;
+    mobileCards.appendChild(card);
+  });
+  section.appendChild(mobileCards);
+
+  // detecta mobile e alterna visibilidade
+  function toggleMobileAnual(){
+    const isMobile = window.innerWidth <= 720;
+    secMobile.style.display = isMobile ? '' : 'none';
+    mobileCards.style.display = isMobile ? 'flex' : 'none';
+  }
+  toggleMobileAnual();
+  window.removeEventListener('resize', window._mobileAnualResize);
+  window._mobileAnualResize = toggleMobileAnual;
+  window.addEventListener('resize', window._mobileAnualResize);
+
   // draw chart after DOM update
   requestAnimationFrame(()=>{
     drawChart(saldos);
@@ -828,8 +937,13 @@ function drawChart(saldos){
   const canvas = document.getElementById('chartSaldo');
   if(!canvas) return;
   const ctx = canvas.getContext('2d');
-  const labels = MESES_IDS.map((_,i)=>MESES_NOMES[i].substring(0,3));
-  const values = MESES_IDS.map(id=>saldos[id]);
+  // no mobile mostra só meses com dados; no desktop mostra todos os 12
+  const isMobile = window.innerWidth <= 720;
+  const filteredIds = isMobile
+    ? MESES_IDS.filter(id=>{ const c=computeMes(id); return c.totalEntradas>0||c.totalGastos>0; })
+    : MESES_IDS;
+  const labels = filteredIds.map(id=>MESES_NOMES[MESES_IDS.indexOf(id)].substring(0,3));
+  const values = filteredIds.map(id=>saldos[id]);
 
   function draw(){
     const W = canvas.parentElement.clientWidth - 40;
