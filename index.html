@@ -68,6 +68,30 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .stat-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;display:inline-block;margin-top:4px;width:fit-content}
 .badge-green{background:var(--green-dim);color:var(--green)}.badge-red{background:var(--red-dim);color:var(--red)}
 
+/* META CARD */
+.meta-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s}
+.meta-card.atingida{border-color:var(--green)}
+.meta-card.nao-atingida{border-color:var(--red)}
+.meta-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.meta-info{display:flex;flex-direction:column;gap:3px}
+.meta-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.8px;text-transform:uppercase}
+.meta-valor{font-family:var(--font-head);font-size:22px;font-weight:700;letter-spacing:-.5px}
+.meta-valor.green{color:var(--green)}.meta-valor.red{color:var(--red)}
+.meta-edit-btn{background:none;border:1px solid var(--border);color:var(--muted);font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:var(--font-body);transition:all .15s;white-space:nowrap;flex-shrink:0}
+.meta-edit-btn:hover{border-color:var(--accent);color:var(--accent)}
+.meta-progress-bg{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.meta-progress-fill{height:100%;border-radius:99px;transition:width .7s cubic-bezier(.4,0,.2,1);width:0%}
+.meta-sub-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted)}
+.meta-sub-row .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+
+/* MODAL META */
+.modal-meta{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:360px;transform:translateY(20px) scale(.98);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.modal-overlay.open .modal-meta{transform:translateY(0) scale(1)}
+@media(max-width:720px){
+  .modal-meta{border-radius:20px 20px 0 0;padding:24px 20px 36px;max-width:100%;transform:translateY(100%)}
+  .modal-overlay.open .modal-meta{transform:translateY(0) scale(1)}
+}
+
 /* SECTION TITLE */
 .section-title{font-family:var(--font-head);font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px;margin-top:30px}
 
@@ -470,12 +494,31 @@ canvas{display:block}
   </div>
 </div>
 
+<!-- MODAL META -->
+<div class="modal-overlay" id="modalMetaOverlay">
+  <div class="modal-meta">
+    <h2 style="font-family:var(--font-head);font-size:18px;font-weight:700;margin-bottom:6px">Meta de Economia</h2>
+    <p id="modalMetaSub" style="font-size:13px;color:var(--muted);margin-bottom:22px"></p>
+    <div class="form-group">
+      <label class="form-label">Meta para este mês (R$)</label>
+      <input class="form-input" type="number" id="fMetaValor" placeholder="500,00" step="0.01" min="0">
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:-8px;margin-bottom:18px">
+      Deixe em branco para usar o padrão de R$500,00
+    </p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModalMeta()">Cancelar</button>
+      <button class="btn-save" onclick="salvarMeta()">Salvar meta</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, setDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBLbpQ4VI1tRFeIBPUdbSdqUnkewJBQAMo",
@@ -495,18 +538,21 @@ const MESES_NOMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julh
 const CATS        = ['Alimentação','Transporte','Lazer','Saúde','Educação','Moradia','Roupas','Outros'];
 const CAT_COLORS  = ['#F97316','#3B82F6','#EC4899','#22C55E','#A855F7','#F59E0B','#14B8A6','#6B7280'];
 const CAT_ICONS   = ['🍽️','🚌','🎮','❤️','📚','🏠','👕','📦'];
-const META_ECONOMIA = 500;
+// META_ECONOMIA agora é dinâmica — veja getMeta(mesId)
 
 /* Saldo inicial por ano — adicione novos anos aqui conforme necessário */
 const SALDO_INICIAL_ANO = { 2026: 2480 };
+const META_PADRAO = 500;
 
 /* ── ESTADO ── */
 let uid = null;
 let currentMes = null;
 let currentTab = 'gasto';
 let editingItem = null; // { mesId, tipo, id } quando em modo edição
+let editingMetaMes = null; // mesId sendo editado na meta
 let unsubListeners = {};
 let DATA = {};
+let METAS = {}; // METAS[mesId] = valor ou null (usa META_PADRAO)
 let CURRENT_YEAR = new Date().getFullYear();
 
 function resetData() {
@@ -520,6 +566,67 @@ const fmt    = v => v === 0 ? '—' : 'R$' + v.toLocaleString('pt-BR',{minimumFr
 const fmtVal = v => 'R$' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const pct    = (v,t) => t === 0 ? 0 : Math.round(v/t*100);
 const saldoInicial = () => SALDO_INICIAL_ANO[CURRENT_YEAR] ?? 0;
+
+/* ── META POR MÊS ── */
+function getMeta(mesId) {
+  return METAS[mesId] ?? META_PADRAO;
+}
+
+/* ── FIRESTORE: listener de metas ── */
+function subscribeMetas() {
+  if (unsubListeners['metas']) return;
+  const ref = doc(db, `users/${uid}/${CURRENT_YEAR}/metas`);
+  unsubListeners['metas'] = onSnapshot(ref, snap => {
+    if (snap.exists()) {
+      METAS = snap.data();
+    } else {
+      METAS = {};
+    }
+    // re-renderiza o mês ativo se for um mês específico
+    const activeView = document.querySelector('.view.active');
+    if (activeView && activeView.id !== 'view-anual') {
+      const mesId = activeView.id.replace('view-','');
+      if (MESES_IDS.includes(mesId)) renderMes(mesId);
+    }
+    renderAnual();
+  });
+}
+
+window.openModalMeta = (mesId) => {
+  editingMetaMes = mesId;
+  const idx = MESES_IDS.indexOf(mesId);
+  document.getElementById('modalMetaSub').textContent = MESES_NOMES[idx] + ' ' + CURRENT_YEAR;
+  document.getElementById('fMetaValor').value = METAS[mesId] ?? '';
+  document.getElementById('modalMetaOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('fMetaValor').focus(), 250);
+};
+
+window.closeModalMeta = () => {
+  document.getElementById('modalMetaOverlay').classList.remove('open');
+  editingMetaMes = null;
+};
+
+window.salvarMeta = async () => {
+  const btn = document.querySelector('#modalMetaOverlay .btn-save');
+  btn.disabled = true; btn.textContent = 'Salvando…';
+  try {
+    const val = parseFloat(document.getElementById('fMetaValor').value);
+    const ref  = doc(db, `users/${uid}/${CURRENT_YEAR}/metas`);
+    if (!val || val <= 0) {
+      // remove a meta customizada — volta pro padrão
+      const { [editingMetaMes]: _, ...rest } = METAS;
+      await setDoc(ref, rest);
+    } else {
+      await setDoc(ref, { ...METAS, [editingMetaMes]: val }, { merge: true });
+    }
+    closeModalMeta();
+    showToast('Meta salva! ✓');
+  } catch(e) {
+    showToast('Erro ao salvar meta: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Salvar meta';
+  }
+};
 
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
@@ -546,6 +653,7 @@ function changeYear(delta) {
   Object.values(unsubListeners).forEach(fn => fn());
   unsubListeners = {};
   resetData();
+  METAS = {};
   // reseta tags
   MESES_IDS.forEach(id => {
     const tag = document.getElementById('tag-'+id);
@@ -653,7 +761,10 @@ function subscribeMonth(mesId) {
   );
 }
 
-function subscribeAll() { MESES_IDS.forEach(id => subscribeMonth(id)); }
+function subscribeAll() {
+  MESES_IDS.forEach(id => subscribeMonth(id));
+  subscribeMetas();
+}
 
 /* ── EXPORTAÇÃO CSV ── */
 window.exportarCSV = (mesId) => {
@@ -835,14 +946,36 @@ function renderMes(mesId) {
     <div class="stat-card"><span class="stat-label">Rendimentos</span><span class="stat-value${totalRend>0?' green':''}">${totalRend>0?fmtVal(totalRend):'—'}</span></div>
     <div class="stat-card"><span class="stat-label">Total Entradas</span><span class="stat-value green">${fmtVal(totalEntradas)}</span></div>
     <div class="stat-card"><span class="stat-label">Total Gastos</span><span class="stat-value red">${fmtVal(totalGastos)}</span></div>
-    <div class="stat-card"><span class="stat-label">Meta Economia</span><span class="stat-value">${fmtVal(META_ECONOMIA)}</span></div>
-    <div class="stat-card">
-      <span class="stat-label">Economia Real</span>
-      <span class="stat-value ${economiaReal>=META_ECONOMIA?'green':'red'}">${fmtVal(economiaReal)}</span>
-      <span class="stat-badge ${economiaPct>=40?'badge-green':'badge-red'}">${economiaPct}% da receita</span>
-    </div>
+    <div class="stat-card"><span class="stat-label">Economia Real</span><span class="stat-value ${economiaReal>=(getMeta(mesId))?'green':'red'}">${fmtVal(economiaReal)}</span><span class="stat-badge ${economiaPct>=40?'badge-green':'badge-red'}">${economiaPct}% da receita</span></div>
   `;
   section.appendChild(grid);
+
+  // ── META CARD ──
+  const metaValor   = getMeta(mesId);
+  const metaPerc    = Math.min(100, totalEntradas > 0 ? (economiaReal / metaValor) * 100 : 0);
+  const metaAtingida = economiaReal >= metaValor;
+  const metaCard = document.createElement('div');
+  metaCard.className = `meta-card ${metaAtingida ? 'atingida' : 'nao-atingida'}`;
+  metaCard.innerHTML = `
+    <div class="meta-top">
+      <div class="meta-info">
+        <span class="meta-label">Meta de Economia — ${label} ${CURRENT_YEAR}</span>
+        <span class="meta-valor ${metaAtingida?'green':'red'}">${fmtVal(metaValor)}</span>
+      </div>
+      <button class="meta-edit-btn" onclick="openModalMeta('${mesId}')">✏️ Editar meta</button>
+    </div>
+    <div class="meta-progress-bg">
+      <div class="meta-progress-fill" data-pct="${Math.max(0,metaPerc.toFixed(1))}"
+        style="background:${metaAtingida?'var(--green)':'var(--red)'};width:0%"></div>
+    </div>
+    <div class="meta-sub-row">
+      <span>Economia atual: <strong style="color:${metaAtingida?'var(--green)':'var(--red)'}">${fmtVal(economiaReal)}</strong></span>
+      <span class="badge ${metaAtingida?'badge-green':'badge-red'}">
+        ${metaAtingida ? '✓ Meta atingida' : `${Math.round(metaPerc)}% da meta`}
+      </span>
+    </div>
+  `;
+  section.appendChild(metaCard);
 
   // Category bars
   const secCat = document.createElement('p');
@@ -908,7 +1041,13 @@ function renderMes(mesId) {
   section.appendChild(secGastos);
   section.appendChild(buildIncomeBlock('GASTOS', DATA[mesId].gastos, mesId, 'gastos'));
 
-  setTimeout(() => animateBars(section), 80);
+  setTimeout(() => {
+    animateBars(section);
+    // anima barra da meta
+    section.querySelectorAll('.meta-progress-fill').forEach(bar => {
+      bar.style.width = (bar.dataset.pct || 0) + '%';
+    });
+  }, 80);
   renderAnual();
 }
 
@@ -1097,8 +1236,10 @@ function renderAnual() {
       <div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between">
         <span style="font-size:12px;color:var(--muted)">Economia</span>
         <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:13px;font-weight:600;color:${c.economiaReal>=0?'var(--green)':'var(--red)'}">${fmtVal(c.economiaReal)}</span>
-          <span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:${eco>=40?'var(--green-dim)':'var(--red-dim)'};color:${eco>=40?'var(--green)':'var(--red)'}">${eco}%</span>
+          <span style="font-size:13px;font-weight:600;color:${c.economiaReal>=getMeta(id)?'var(--green)':'var(--red)'}">${fmtVal(c.economiaReal)}</span>
+          <span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:${c.economiaReal>=getMeta(id)?'var(--green-dim)':'var(--red-dim)'};color:${c.economiaReal>=getMeta(id)?'var(--green)':'var(--red)'}">
+            ${c.economiaReal>=getMeta(id)?'✓ meta':'meta: '+fmtVal(getMeta(id))}
+          </span>
         </div>
       </div>
     `;
@@ -1314,7 +1455,10 @@ function initNav() {
   document.getElementById('modalOverlay').addEventListener('click',e=>{
     if(e.target===document.getElementById('modalOverlay')) closeModal();
   });
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+  document.getElementById('modalMetaOverlay').addEventListener('click',e=>{
+    if(e.target===document.getElementById('modalMetaOverlay')) closeModalMeta();
+  });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeModalMeta(); } });
 }
 
 /* ── SEED ── */
