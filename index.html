@@ -15,9 +15,9 @@
   --font-head:'Space Grotesk',sans-serif;--font-body:'Inter',sans-serif;
   --radius:12px;--radius-sm:8px;
 }
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;line-height:1.5}
-.shell{display:grid;grid-template-columns:220px 1fr;grid-template-rows:auto 1fr;min-height:100vh}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;line-height:1.5;overflow-x:hidden}
+.shell{display:grid;grid-template-columns:220px 1fr;grid-template-rows:auto 1fr;min-height:100vh;overflow-x:hidden}
 
 /* TOPBAR */
 .topbar{grid-column:1/-1;background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
@@ -188,34 +188,34 @@ canvas{display:block}
 
 /* MOBILE */
 @media(max-width:720px){
-  .shell{grid-template-columns:1fr}
-  .main{padding:16px 14px 100px;max-width:100%}
-  .topbar{padding:0 14px;height:52px}
+  .shell{display:block;width:100vw}
+  .main{padding:16px 14px 100px;width:100vw;max-width:100vw;overflow-x:hidden;box-sizing:border-box}
+  .topbar{padding:0 14px;height:52px;width:100vw;max-width:100vw}
   .topbar-brand{font-size:14px;gap:7px}
   .btn-logout{display:none}
   .hamburger{display:block}
   .user-badge .email-text{display:none}
-  .sidebar{display:none;position:fixed;top:52px;left:0;right:0;bottom:0;z-index:200;height:calc(100vh - 52px)}
-  .sidebar.open{display:flex}
-  .page-header h1{font-size:19px}
-  .page-header p{font-size:12px}
-  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px}
+  .sidebar{display:none!important;position:fixed;top:52px;left:0;right:0;bottom:0;z-index:200;height:calc(100vh - 52px)}
+  .sidebar.open{display:flex!important}
+  .page-header h1{font-size:19px;overflow-wrap:break-word;word-break:break-word;max-width:calc(100vw - 28px)}
+  .page-header p{font-size:12px;overflow-wrap:break-word;word-break:break-word;max-width:calc(100vw - 28px)}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;width:100%;max-width:100%}
   .stat-card{padding:14px}
   .stat-label{font-size:10px}
   .stat-value{font-size:17px}
   .stat-sub{font-size:10px}
   .stat-badge{font-size:10px}
-  .week-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .week-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
   .week-scroll-hint{display:block;font-size:11px;color:var(--muted);margin-bottom:8px}
   .week-table{min-width:480px;font-size:12px}
   .week-table th,.week-table td{padding:8px 10px}
   .anual-table-wrap{display:none}
-  .cat-item{padding:12px 14px}
+  .cat-item{padding:12px 14px;overflow:hidden;max-width:100%}
   .cat-icon{width:26px;height:26px;font-size:12px}
   .cat-name{font-size:13px}
   .cat-amount{font-size:14px}
   .cat-header{margin-bottom:8px}
-  .income-row{padding:10px 14px;font-size:13px}
+  .income-row{padding:10px 14px;font-size:13px;overflow-wrap:break-word;word-break:break-word}
   .income-block-head{padding:11px 14px}
   .btn-add-primary{width:100%;justify-content:center;padding:12px;font-size:14px}
   .modal-overlay{align-items:flex-end;padding:0}
