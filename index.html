@@ -711,10 +711,13 @@ window.exportarPDF = async (mesId) => {
   ].join('');
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Financeiro ${mesNome} ${CURRENT_YEAR}</title>
   <style>
+    *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Arial,sans-serif;padding:32px;color:#111;max-width:800px;margin:0 auto}
-    h1{font-size:22px;margin-bottom:4px}p.sub{color:#666;font-size:13px;margin-bottom:24px}
+    h1{font-size:22px;margin-bottom:4px}
+    p.sub{color:#666;font-size:13px;margin-bottom:24px}
     h2{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#555;margin:24px 0 10px}
     .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
     .kpi{border:1px solid #e5e7eb;border-radius:8px;padding:14px}
@@ -724,7 +727,33 @@ window.exportarPDF = async (mesId) => {
     table{width:100%;border-collapse:collapse;font-size:13px}
     th{background:#f3f4f6;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#555}
     td{padding:8px 10px;border-bottom:1px solid #f3f4f6}
-    @media print{body{padding:16px}}
+    /* BARRA DE AÇÕES — some ao imprimir */
+    .action-bar{
+      position:fixed;bottom:0;left:0;right:0;
+      background:#fff;border-top:1px solid #e5e7eb;
+      padding:14px 24px;display:flex;gap:12px;align-items:center;
+      justify-content:space-between;z-index:100;
+    }
+    .action-bar .title{font-size:14px;font-weight:600;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .action-bar-btns{display:flex;gap:10px;flex-shrink:0}
+    .btn-close{background:none;border:1px solid #d1d5db;color:#6b7280;padding:8px 18px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer}
+    .btn-close:hover{border-color:#9ca3af;color:#374151}
+    .btn-print{background:#7c3aed;border:none;color:#fff;padding:8px 18px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+    .btn-print:hover{opacity:.85}
+    /* espaço para a barra não cobrir o conteúdo */
+    body{padding-bottom:90px}
+    @media(max-width:600px){
+      body{padding:16px;padding-bottom:90px}
+      .kpis{grid-template-columns:1fr 1fr}
+      .action-bar{padding:12px 16px}
+      .action-bar .title{font-size:13px}
+      table{font-size:12px}
+      th,td{padding:6px 8px}
+    }
+    @media print{
+      .action-bar{display:none}
+      body{padding:16px}
+    }
   </style></head><body>
   <h1>Controle Financeiro — ${mesNome} ${CURRENT_YEAR}</h1>
   <p class="sub">Saldo anterior: ${fmtVal(saldoAnterior)} · Saldo após este mês: ${fmtVal(saldos[mesId])}</p>
@@ -737,11 +766,20 @@ window.exportarPDF = async (mesId) => {
   <h2>Todos os Lançamentos</h2>
   <table><thead><tr><th>Tipo</th><th>Descrição</th><th>Categoria</th><th>Semana</th><th style="text-align:right">Valor</th></tr></thead>
   <tbody>${lancRows || '<tr><td colspan="5" style="color:#999">Nenhum lançamento</td></tr>'}</tbody></table>
+
+  <!-- BARRA FIXA DE AÇÕES -->
+  <div class="action-bar">
+    <span class="title">📄 ${mesNome} ${CURRENT_YEAR}</span>
+    <div class="action-bar-btns">
+      <button class="btn-close" onclick="window.close()">← Voltar</button>
+      <button class="btn-print" onclick="window.print()">Imprimir / Salvar PDF</button>
+    </div>
+  </div>
   </body></html>`;
 
   const w = window.open('','_blank');
-  w.document.write(html); w.document.close();
-  setTimeout(() => { w.print(); }, 400);
+  w.document.write(html);
+  w.document.close();
 };
 
 /* ── RENDER MÊS ── */
