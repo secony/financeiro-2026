@@ -947,6 +947,8 @@ function renderMes(mesId) {
     <div class="stat-card"><span class="stat-label">Total Entradas</span><span class="stat-value green">${fmtVal(totalEntradas)}</span></div>
     <div class="stat-card"><span class="stat-label">Total Gastos</span><span class="stat-value red">${fmtVal(totalGastos)}</span></div>
     <div class="stat-card"><span class="stat-label">Economia Real</span><span class="stat-value ${economiaReal>=(getMeta(mesId))?'green':'red'}">${fmtVal(economiaReal)}</span><span class="stat-badge ${economiaPct>=40?'badge-green':'badge-red'}">${economiaPct}% da receita</span></div>
+    <div class="stat-card"><span class="stat-label">Saldo Atual</span><span class="stat-value accent">${fmtVal(saldoAtual)}</span><span class="stat-sub">Anterior: ${fmtVal(saldoAnterior)}</span></div>
+    <div class="stat-card"><span class="stat-label">Saldo Atual</span><span class="stat-value accent">${fmtVal(saldoAtual)}</span><span class="stat-sub">Anterior: ${fmtVal(saldoAnterior)}</span></div>
   `;
   section.appendChild(grid);
 
