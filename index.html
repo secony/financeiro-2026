@@ -19,10 +19,10 @@
 }
 html{scroll-behavior:smooth;overflow-x:hidden}
 body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;line-height:1.5;overflow-x:hidden}
-.shell{display:grid;grid-template-columns:220px 1fr;grid-template-rows:auto 1fr;min-height:100vh;overflow-x:hidden}
+.shell{min-height:100vh;overflow-x:hidden}
 
 /* TOPBAR */
-.topbar{grid-column:1/-1;background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .topbar-brand{font-family:var(--font-head);font-size:16px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
 .topbar-brand span{color:var(--accent)}
 .topbar-right{display:flex;align-items:center;gap:10px}
@@ -38,7 +38,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .hamburger svg{width:22px;height:22px}
 
 /* SIDEBAR */
-.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px 12px;position:sticky;top:60px;align-self:start;max-height:calc(100vh - 60px);overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px 12px;position:fixed;top:60px;left:0;width:220px;height:calc(100vh - 60px);overflow-y:auto;display:flex;flex-direction:column;gap:4px;z-index:90}
 .sidebar-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;padding:8px 10px 4px;margin-top:8px}
 .nav-btn{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:var(--radius-sm);border:none;background:transparent;color:var(--muted);font-family:var(--font-body);font-size:13.5px;font-weight:500;cursor:pointer;transition:background .15s,color .15s;width:100%;text-align:left}
 .nav-btn:hover{background:var(--surface2);color:var(--text)}
@@ -51,7 +51,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* MAIN */
-.main{padding:28px 40px 60px;max-width:1280px;margin:0 auto;width:100%}
+.main{padding:28px 40px 60px;max-width:1280px;margin-left:220px;width:calc(100% - 220px)}
 .view{display:none}.view.active{display:block}
 
 /* PAGE HEADER */
@@ -158,10 +158,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .anual-dash-col .section-title{margin-top:0}
 @media(min-width:1100px){
   .anual-dash-grid{display:grid;grid-template-columns:1.3fr 1fr;align-items:start;gap:24px;margin-bottom:8px}
-  .anual-dash-grid .chart-wrap{margin-bottom:0;height:100%}
+  .anual-dash-grid .chart-wrap{margin-bottom:0}
 }
 .chart-title{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:16px}
 canvas{display:block}
+.chart-mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin:18px -20px -10px;border-radius:0 0 var(--radius) var(--radius);overflow:hidden}
+.cms-item{background:var(--surface);padding:12px 16px;display:flex;flex-direction:column;gap:2px}
+.cms-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.6px;text-transform:uppercase}
+.cms-value{font-family:var(--font-head);font-size:14px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cms-value.green{color:var(--green)}
+.cms-value.red{color:var(--red)}
+.cms-value.accent{color:var(--accent)}
+.cms-sub{font-size:10.5px;color:var(--muted)}
 
 /* BUTTONS */
 .btn-add-primary{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:var(--radius-sm);border:none;background:var(--accent);color:#fff;font-family:var(--font-body);font-size:13.5px;font-weight:600;cursor:pointer;transition:opacity .15s}
@@ -223,7 +231,7 @@ canvas{display:block}
 /* MOBILE */
 @media(max-width:720px){
   .shell{display:block;width:100vw}
-  .main{padding:16px 14px 100px;width:100vw;max-width:100vw;overflow-x:hidden;box-sizing:border-box}
+  .main{padding:16px 14px 100px;width:100vw;max-width:100vw;margin-left:0;overflow-x:hidden;box-sizing:border-box}
   .topbar{padding:0 14px;height:52px;width:100vw;max-width:100vw}
   .topbar-brand{font-size:14px;gap:7px}
   .btn-logout{display:none}
@@ -261,6 +269,7 @@ canvas{display:block}
   .form-input,.form-select{font-size:16px}
   .section-title{font-size:11px;margin-top:22px;margin-bottom:10px}
   .chart-wrap{padding:16px 14px 8px}
+  .chart-mini-stats{grid-template-columns:1fr;margin:14px -14px -8px}
   .toast{bottom:16px;right:14px;left:14px;max-width:100%;text-align:center}
   .export-row{gap:6px}
   .btn-export{font-size:11px;padding:6px 10px}
@@ -1127,6 +1136,7 @@ function renderAnual() {
   const saldoAtualAnual = saldoInicial() + totalEconomiaAnual;
   const percEco = pct(totalEconomiaAnual, totalEntradasAnual);
   const mesesAtivos = MESES_IDS.filter(id => computeMes(id).totalEntradas>0).length;
+  const computedAll = MESES_IDS.map(id=>computeMes(id));
 
   const grid = document.createElement('div');
   grid.className = 'stat-grid';
@@ -1145,7 +1155,20 @@ function renderAnual() {
 
   const chartWrap = document.createElement('div');
   chartWrap.className = 'chart-wrap';
-  chartWrap.innerHTML = `<div class="chart-title">Saldo Acumulado — Evolução Mensal</div><canvas id="chartSaldo" height="120"></canvas>`;
+  const activeMonths = computedAll.map((c,i)=>({c,i})).filter(o=>o.c.totalEntradas>0||o.c.totalGastos>0);
+  let miniStatsHTML = '';
+  if(activeMonths.length){
+    const bestEco    = activeMonths.reduce((a,b)=>b.c.economiaReal>a.c.economiaReal?b:a);
+    const worstGasto = activeMonths.reduce((a,b)=>b.c.totalGastos>a.c.totalGastos?b:a);
+    const mediaEco   = totalEconomiaAnual/Math.max(1,mesesAtivos);
+    miniStatsHTML = `
+      <div class="chart-mini-stats">
+        <div class="cms-item"><span class="cms-label">Melhor mês</span><span class="cms-value green">${MESES_NOMES[bestEco.i]}</span><span class="cms-sub">${fmtVal(bestEco.c.economiaReal)} economizados</span></div>
+        <div class="cms-item"><span class="cms-label">Maior gasto</span><span class="cms-value red">${MESES_NOMES[worstGasto.i]}</span><span class="cms-sub">${fmtVal(worstGasto.c.totalGastos)} no mês</span></div>
+        <div class="cms-item"><span class="cms-label">Média de economia</span><span class="cms-value accent">${fmtVal(mediaEco)}</span><span class="cms-sub">por mês ativo</span></div>
+      </div>`;
+  }
+  chartWrap.innerHTML = `<div class="chart-title">Saldo Acumulado — Evolução Mensal</div><canvas id="chartSaldo" height="120"></canvas>${miniStatsHTML}`;
   dashGrid.appendChild(chartWrap);
 
   const catCol = document.createElement('div');
@@ -1192,7 +1215,6 @@ function renderAnual() {
   const tblWrap = document.createElement('div');
   tblWrap.className = 'anual-table-wrap';
   const mesesCols = MESES_IDS.map((_,i)=>MESES_NOMES[i].substring(0,3).toUpperCase());
-  const computedAll = MESES_IDS.map(id=>computeMes(id));
   const rowsDef = [
     {label:'Receita Total',  key:'totalReceita', cls:''},
     {label:'Rendimentos',    key:'totalRend',    cls:'val-green'},
