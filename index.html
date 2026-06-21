@@ -205,6 +205,17 @@ canvas{display:block}
 .toast.success{border-color:var(--green);color:var(--green)}
 .toast.error{border-color:var(--red);color:var(--red)}
 
+/* DESKTOP WIDE (>=1100px) — usa o espaço horizontal sobrando, reduz altura da página.
+   Abaixo de 1100px (tablets/janelas menores) o layout de 1 coluna padrão continua intacto. */
+@media(min-width:1100px){
+  .main{max-width:1280px}
+
+  .cat-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 16px}
+
+  .two-col-row{display:flex;gap:24px;align-items:flex-start}
+  .two-col-row>.col-block{flex:1;min-width:0}
+}
+
 /* MOBILE */
 @media(max-width:720px){
   .shell{grid-template-columns:1fr}
@@ -677,11 +688,16 @@ function renderMes(mesId){
   `;
   section.appendChild(grid);
 
-  // category bars
+  // category bars + breakdown semanal — lado a lado no desktop (>=1100px), empilhados no mobile
+  const catWeekRow = document.createElement('div');
+  catWeekRow.className = 'two-col-row';
+
+  const colCat = document.createElement('div');
+  colCat.className = 'col-block';
   const secCat = document.createElement('p');
   secCat.className = 'section-title';
   secCat.textContent = 'Gastos por Categoria';
-  section.appendChild(secCat);
+  colCat.appendChild(secCat);
 
   const catList = document.createElement('div');
   catList.className = 'cat-list';
@@ -703,13 +719,15 @@ function renderMes(mesId){
     `;
     catList.appendChild(item);
   });
-  section.appendChild(catList);
+  colCat.appendChild(catList);
+  catWeekRow.appendChild(colCat);
 
-  // weekly table
+  const colWeek = document.createElement('div');
+  colWeek.className = 'col-block';
   const secWeek = document.createElement('p');
   secWeek.className = 'section-title';
   secWeek.textContent = 'Breakdown Semanal';
-  section.appendChild(secWeek);
+  colWeek.appendChild(secWeek);
 
   const wrap = document.createElement('div');
   wrap.className = 'week-table-wrap';
@@ -729,20 +747,36 @@ function renderMes(mesId){
   scrollHint.textContent = '← deslize para ver todas as semanas';
   scrollHint.style.cssText = 'display:none';
   if(window.innerWidth<=720) scrollHint.style.display='block';
-  section.appendChild(scrollHint);
+  colWeek.appendChild(scrollHint);
 
   wrap.innerHTML = `<table class="week-table"><thead><tr><th>Categoria</th><th>Semana 1</th><th>Semana 2</th><th>Semana 3</th><th>Semana 4</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table>`;
-  section.appendChild(wrap);
+  colWeek.appendChild(wrap);
+  catWeekRow.appendChild(colWeek);
 
-  // receitas
+  section.appendChild(catWeekRow);
+
+  // receitas + rendimentos — lado a lado no desktop quando os dois existem
   const secRec = document.createElement('p');
   secRec.className = 'section-title';
   secRec.textContent = 'Entradas';
   section.appendChild(secRec);
-  section.appendChild(buildIncomeBlock('RECEITAS', DATA[mesId].receitas, mesId, 'receitas'));
+
+  const incomeRow = document.createElement('div');
+  incomeRow.className = 'two-col-row';
+
+  const colReceitas = document.createElement('div');
+  colReceitas.className = 'col-block';
+  colReceitas.appendChild(buildIncomeBlock('RECEITAS', DATA[mesId].receitas, mesId, 'receitas'));
+  incomeRow.appendChild(colReceitas);
+
   if(DATA[mesId].rendimentos.length > 0 || totalRend > 0){
-    section.appendChild(buildIncomeBlock('RENDIMENTOS', DATA[mesId].rendimentos, mesId, 'rendimentos'));
+    const colRend = document.createElement('div');
+    colRend.className = 'col-block';
+    colRend.appendChild(buildIncomeBlock('RENDIMENTOS', DATA[mesId].rendimentos, mesId, 'rendimentos'));
+    incomeRow.appendChild(colRend);
   }
+
+  section.appendChild(incomeRow);
 
   // anima barras
   setTimeout(()=>animateBars(section), 80);
